@@ -39,13 +39,15 @@ class DatabaseTests extends \PHPUnit\Framework\TestCase
     public function testSelect()
     {
         $results = Database::select("option");
-        var_dump($results);
+        echo json_encode($results);
+        $this->assertGreaterThan(0, count($results));
     }
 
     public function testWhere()
     {
         $results = Database::where("option", "code = 'MAILER_PASSWORD'" );
-        print_r($results);
+        echo json_encode($results);
+        $this->assertCount(1, $results);
     }
 
 
@@ -58,6 +60,8 @@ class DatabaseTests extends \PHPUnit\Framework\TestCase
         $generals = General::select();
         echo $generals."\n";
         $this->assertGreaterThan(0, count($generals));
+
+
 
         echo "\n";
     }

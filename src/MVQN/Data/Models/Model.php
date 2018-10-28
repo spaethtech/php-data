@@ -18,31 +18,29 @@ use MVQN\Data\Exceptions\ModelMissingPropertyException;
  */
 abstract class Model extends AutoObject
 {
-
-
     /**
      * Model constructor.
      *
      * @param array $data An associative array of column name => column value pairs.
      * @throws ModelMissingPropertyException
-     * @throws \ReflectionException
      */
     public function __construct(array $data = [])
     {
         // Get this class name.
         $class = get_class($this);
 
-        if(self::$columnProperties === null)
-            self::buildColumnProperties();
+        if (self::$columnPropertiesCache === null || !array_key_exists($class, self::$columnPropertiesCache) ||
+            self::$columnPropertiesCache[$class] === null)
+            self::buildColumnPropertiesCache();
 
         // Loop through each key/value pair provided...
         foreach($data as $key => $value)
         {
             // IF the column name has a matching index in the collection...
-            if(array_key_exists($key, self::$columnProperties))
+            if(array_key_exists($key, self::$columnPropertiesCache[$class]))
             {
                 // THEN set the current column's data on all properties annotated with this column name.
-                foreach(self::$columnProperties[$key] as $propertyName)
+                foreach(self::$columnPropertiesCache[$class][$key] as $propertyName)
                     $this->$propertyName = $value;
             }
             else
@@ -55,9 +53,9 @@ abstract class Model extends AutoObject
     }
 
 
-    private static $columnProperties;
+    private static $columnPropertiesCache;
 
-    private static function buildColumnProperties()
+    private static function buildColumnPropertiesCache()
     {
         // Get this class name.
         $class = get_called_class();
@@ -67,7 +65,7 @@ abstract class Model extends AutoObject
         $properties = $annotations->getPropertyAnnotations();
 
         // Initialize a collection of column => property names.
-        self::$columnProperties = [];
+        self::$columnPropertiesCache[$class] = [];
 
         // Loop through each property annotation...
         foreach($properties as $property)
@@ -79,23 +77,27 @@ abstract class Model extends AutoObject
             // If the current property has a @ColumnNameAnnotation...
             if(array_key_exists("ColumnName", $property))
                 // THEN add the column name and property name pairing to the collection!
-                self::$columnProperties[$property["ColumnName"]][] = $property["var"]["name"];
+                self::$columnPropertiesCache[$class][$property["ColumnName"]][] = $property["var"]["name"];
             else
                 // OTHERWISE add the property name to the collection, paired to itself!
-                self::$columnProperties[$property["var"]["name"]][] = $property["var"]["name"];
+                self::$columnPropertiesCache[$class][$property["var"]["name"]][] = $property["var"]["name"];
         }
     }
 
 
     private static function verifyColumnName(string $columnName): ?string
     {
-        if(self::$columnProperties === null)
-            self::buildColumnProperties();
+        // Get this class name.
+        $class = get_called_class();
 
-        if(array_key_exists($columnName, self::$columnProperties))
+        if (self::$columnPropertiesCache === null || !array_key_exists($class, self::$columnPropertiesCache) ||
+            self::$columnPropertiesCache[$class] === null)
+            self::buildColumnPropertiesCache();
+
+        if(array_key_exists($columnName, self::$columnPropertiesCache[$class]))
             return $columnName;
 
-        foreach(self::$columnProperties as $column => $properties)
+        foreach(self::$columnPropertiesCache[$class] as $column => $properties)
         {
             if(in_array($columnName, $properties))
                 return $column;
@@ -127,7 +129,7 @@ abstract class Model extends AutoObject
 
         $results = $pdo->query($sql)->fetchAll();
 
-        $class = get_called_class();
+        //$class = get_called_class();
 
         $collection = new Collection($class, []);
 
