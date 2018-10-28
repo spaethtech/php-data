@@ -1,8 +1,11 @@
 <component name="ProjectDictionaryState">
   <dictionary name="rspaeth">
     <words>
+      <w>dbname</w>
+      <w>lcfirst</w>
       <w>mvqn</w>
       <w>spaeth</w>
+      <w>ucfirst</w>
     </words>
   </dictionary>
 </component>

@@ -13,6 +13,7 @@
     "require": {
         "php": "~7.1",
         "ext-json": "*",
+        "ext-pdo": "*",
         "mvqn/common": "~1",
         "mvqn/annotations": "~1",
         "mvqn/collections": "~1",
