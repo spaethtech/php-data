@@ -90,33 +90,32 @@ abstract class Model extends AutoObject
 
         foreach($results as $result)
         {
-            $properties = [];
-
-            /*
-            foreach($result as $key => $value)
-            {
-
-                if(strpos($key, "_") !== false)
-                {
-                    $words = explode("_", $key);
-                    $property = array_shift($words).implode("", array_map("ucfirst", $words));
-                    $properties[$property] = $value;
-                }
-                else
-                {
-                    $properties[$key] = $value;
-                }
-            }
-
-            $object = new $class($properties);
-            */
             $object = new $class($result);
-
             $collection->push($object);
         }
 
         return $collection;
     }
 
+    public static function where(string $column, string $operator, string $value): Collection
+    {
+        $pdo = Database::connect();
+
+        $sql = "SELECT * FROM option WHERE $column $operator $value";
+
+        $results = $pdo->query($sql)->fetchAll();
+
+        $class = get_called_class();
+
+        $collection = new Collection($class, []);
+
+        foreach($results as $result)
+        {
+            $object = new $class($result);
+            $collection->push($object);
+        }
+
+        return $collection;
+    }
 
 }
