@@ -18,6 +18,9 @@ use MVQN\Data\Exceptions\ModelMissingPropertyException;
  */
 abstract class Model extends AutoObject
 {
+    /** @var string */
+    private $tableName;
+
     /**
      * Model constructor.
      *
@@ -32,6 +35,13 @@ abstract class Model extends AutoObject
 
         // Create an AnnotationReader and get all of the annotations on properties of this class.
         $annotations = new AnnotationReader($class);
+
+        if($annotations->hasClassAnnotation("TableName"))
+            $this->tableName = $annotations->getClassAnnotation("TableName");
+        else
+            $this->tableName = lcfirst($annotations->getReflectedClass()->getName());
+
+
         $properties = $annotations->getPropertyAnnotations();
 
         // Initialize a collection of column => property names.
