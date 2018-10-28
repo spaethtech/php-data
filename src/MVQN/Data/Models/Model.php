@@ -19,6 +19,7 @@ use MVQN\Data\Exceptions\ModelMissingPropertyException;
 abstract class Model extends AutoObject
 {
 
+
     /**
      * Model constructor.
      *
@@ -31,12 +32,42 @@ abstract class Model extends AutoObject
         // Get this class name.
         $class = get_class($this);
 
+        if(self::$columnProperties === null)
+            self::buildColumnProperties();
+
+        // Loop through each key/value pair provided...
+        foreach($data as $key => $value)
+        {
+            // IF the column name has a matching index in the collection...
+            if(array_key_exists($key, self::$columnProperties))
+            {
+                // THEN set the current column's data on all properties annotated with this column name.
+                foreach(self::$columnProperties[$key] as $propertyName)
+                    $this->$propertyName = $value;
+            }
+            else
+            {
+                // OTHERWISE no matching column => property pairing or @ColumnNameAnnotation was found!
+                throw new ModelMissingPropertyException("Could not find a property '$key' of class '$class'.  ".
+                    "Are you missing a '@ColumnNameAnnotation' on a property?");
+            }
+        }
+    }
+
+
+    private static $columnProperties;
+
+    private static function buildColumnProperties()
+    {
+        // Get this class name.
+        $class = get_called_class();
+
         // Create an AnnotationReader and get all of the annotations on properties of this class.
         $annotations = new AnnotationReader($class);
         $properties = $annotations->getPropertyAnnotations();
 
         // Initialize a collection of column => property names.
-        $columnProperties = [];
+        self::$columnProperties = [];
 
         // Loop through each property annotation...
         foreach($properties as $property)
@@ -48,29 +79,29 @@ abstract class Model extends AutoObject
             // If the current property has a @ColumnNameAnnotation...
             if(array_key_exists("ColumnName", $property))
                 // THEN add the column name and property name pairing to the collection!
-                $columnProperties[$property["ColumnName"]][] = $property["var"]["name"];
+                self::$columnProperties[$property["ColumnName"]][] = $property["var"]["name"];
             else
                 // OTHERWISE add the property name to the collection, paired to itself!
-                $columnProperties[$property["var"]["name"]][] = $property["var"]["name"];
+                self::$columnProperties[$property["var"]["name"]][] = $property["var"]["name"];
+        }
+    }
+
+
+    private static function verifyColumnName(string $columnName): ?string
+    {
+        if(self::$columnProperties === null)
+            self::buildColumnProperties();
+
+        if(array_key_exists($columnName, self::$columnProperties))
+            return $columnName;
+
+        foreach(self::$columnProperties as $column => $properties)
+        {
+            if(in_array($columnName, $properties))
+                return $column;
         }
 
-        // Loop through each key/value pair provided...
-        foreach($data as $key => $value)
-        {
-            // IF the column name has a matching index in the collection...
-            if(array_key_exists($key, $columnProperties))
-            {
-                // THEN set the current column's data on all properties annotated with this column name.
-                foreach($columnProperties[$key] as $property)
-                    $this->$property = $value;
-            }
-            else
-            {
-                // OTHERWISE no matching column => property pairing or @ColumnNameAnnotation was found!
-                throw new ModelMissingPropertyException("Could not find a property '$key' of class '$class'.  ".
-                    "Are you missing a '@ColumnNameAnnotation' on a property?");
-            }
-        }
+        return null;
     }
 
     /**
@@ -109,7 +140,7 @@ abstract class Model extends AutoObject
         return $collection;
     }
 
-    public static function where(string $column, string $operator, string $value): Collection
+    public static function where(string $column, string $operator, $value): Collection
     {
         $pdo = Database::connect();
 
@@ -123,7 +154,10 @@ abstract class Model extends AutoObject
         else
             $tableName = lcfirst($annotations->getReflectedClass()->getShortName());
 
-        $sql = "SELECT * FROM $tableName WHERE $column $operator $value";
+        $column = self::verifyColumnName($column);
+
+        $sql = "SELECT * FROM $tableName WHERE $column $operator ".
+            (gettype($value) === "string" ? "'$value'" : "$value");
 
         $results = $pdo->query($sql)->fetchAll();
 
