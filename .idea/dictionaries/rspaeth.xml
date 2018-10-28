@@ -4,6 +4,7 @@
       <w>dbname</w>
       <w>lcfirst</w>
       <w>mvqn</w>
+      <w>pgsql</w>
       <w>spaeth</w>
       <w>ucfirst</w>
     </words>
