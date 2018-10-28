@@ -2,6 +2,9 @@
 declare(strict_types=1);
 
 namespace MVQN\Data;
+use MVQN\UCRM\Data\Models\General;
+use MVQN\UCRM\Data\Models\Option;
+
 require_once __DIR__."/../../../vendor/autoload.php";
 
 
@@ -46,6 +49,31 @@ class DatabaseTests extends \PHPUnit\Framework\TestCase
     }
 
 
+    public function testColumnNameAnnotation()
+    {
+        $options = Option::select();
+        echo $options."\n";
+        $this->assertGreaterThan(0, count($options));
+
+        $generals = General::select();
+        echo $generals."\n";
+        $this->assertGreaterThan(0, count($generals));
+
+        echo "\n";
+    }
+
+    public function testTableNameAnnotation()
+    {
+        $options = Option::select();
+        echo $options."\n";
+        $this->assertGreaterThan(0, count($options));
+
+        $generals = General::select();
+        echo $generals."\n";
+        $this->assertGreaterThan(0, count($generals));
+
+        echo "\n";
+    }
 
 
 }
