@@ -122,7 +122,9 @@ class ModelTests extends \PHPUnit\Framework\TestCase
         //Model::create(__DIR__."/../../UCRM/Data/Models/", "MVQN\\UCRM\\Data\\Models", "user");
 
         /** @var User $user */
-        $user = User::where("userId", "=", 1)->first();
+        $user = User::where("user_id", "=", 1)->first();
+
+        // TODO: Figure out why citext columns always fail using WHERE!
 
         echo $user->getCreatedAt()->format("c")."\n";
         echo $user->getUsername()."\n";
