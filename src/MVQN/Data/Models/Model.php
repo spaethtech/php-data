@@ -5,12 +5,15 @@ namespace MVQN\Data\Models;
 
 use MVQN\Annotations\AnnotationReader;
 use MVQN\Collections\Collection;
+use MVQN\Data\Exceptions\ModelCreationException;
 use MVQN\Dynamics\AutoObject;
 use MVQN\Data\Database;
 
 use MVQN\Data\Exceptions\DatabaseConnectionException;
 use MVQN\Data\Exceptions\ModelClassException;
 use MVQN\Data\Exceptions\ModelMissingPropertyException;
+use Nette\PhpGenerator\ClassType;
+use Nette\PhpGenerator\PhpNamespace;
 
 /**
  * Class Model
@@ -30,6 +33,17 @@ abstract class Model extends AutoObject
 
     /** @var array|null A cache for storing each Model's class => table name pairings. */
     private static $tableNameCache;
+
+
+
+    /** @var array|null A cache for storing each Model's table => primary key pairings. */
+    private static $primaryKeyCache;
+
+    /** @var array|null A cache for storing each Model's table => foreign key pairings. */
+    private static $foreignKeysCache;
+
+    /** @var array|null A cache for storing each Model's column => nullability pairings. */
+    private static $nullablesCache;
 
     // =================================================================================================================
     // CONSTRUCTOR
@@ -351,5 +365,285 @@ abstract class Model extends AutoObject
         // Finally, return the Collection!
         return $collection;
     }
+
+    // =================================================================================================================
+    // METHODS: SCHEMA
+    // =================================================================================================================
+
+    /**
+     * Gets the PRIMARY KEY for the specified table.
+     *
+     * @param string $table The table name to inspect.
+     * @return array Returns an array of information pertaining to the PRIMARY KEY of the specified table.
+     * @throws DatabaseConnectionException
+     */
+    private static function getPrimaryKey(string $table): array
+    {
+        if (self::$primaryKeyCache !== null && array_key_exists($table, self::$primaryKeyCache))
+            return self::$primaryKeyCache[$table];
+
+        // Ensure the database is connected!
+        $pdo = Database::connect();
+
+        /** @noinspection SqlResolve */
+        $query = "
+            SELECT
+                tc.constraint_name, tc.table_name, kcu.column_name, 
+                ccu.table_name AS foreign_table_name,
+                ccu.column_name AS foreign_column_name 
+            FROM 
+                information_schema.table_constraints AS tc 
+                JOIN information_schema.key_column_usage AS kcu
+                  ON tc.constraint_name = kcu.constraint_name
+                JOIN information_schema.constraint_column_usage AS ccu
+                  ON ccu.constraint_name = tc.constraint_name
+            WHERE constraint_type = 'PRIMARY KEY' AND tc.table_name = '$table'
+        ";
+
+        $results = $pdo->query($query);
+        self::$primaryKeyCache[$table] = $results->fetch(); // ONLY ONE PRIMARY KEY!
+
+        return self::$primaryKeyCache[$table];
+    }
+
+    /**
+     * Gets the column name of the PRIMARY KEY for the specified table.
+     *
+     * @param string $table The table name to inspect.
+     * @return string Returns the column name of the PRIMARY KEY of the specified table.
+     * @throws DatabaseConnectionException
+     */
+    private static function getPrimaryKeyName(string $table): string
+    {
+        return self::getPrimaryKey($table)["column_name"];
+    }
+
+    /**
+     * Checks to see if the specified column name for the specified table is a PRIMARY KEY.
+     *
+     * @param string $table The table name to inspect.
+     * @param string $column The column name to inspect.
+     * @return bool Returns TRUE if the specified column of the specified table is a PRIMARY KEY, otherwise FALSE.
+     * @throws DatabaseConnectionException
+     */
+    private static function isPrimaryKey(string $table, string $column): bool
+    {
+        return self::getPrimaryKey($table)["column_name"] === $column;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Gets an array of FOREIGN KEY columns for the specified table.
+     *
+     * @param string $table The table name to inspect.
+     * @return array Returns an array of information pertaining to the FOREIGN KEYs of the specified table.
+     * @throws DatabaseConnectionException
+     */
+    private static function getForeignKeys(string $table): array
+    {
+        if (self::$foreignKeysCache !== null && array_key_exists($table, self::$foreignKeysCache))
+            return self::$foreignKeysCache[$table];
+
+        // Ensure the database is connected!
+        $pdo = Database::connect();
+
+        /** @noinspection SqlResolve */
+        $query = "
+            SELECT
+                tc.constraint_name, tc.table_name, kcu.column_name, 
+                ccu.table_name AS foreign_table_name,
+                ccu.column_name AS foreign_column_name 
+            FROM 
+                information_schema.table_constraints AS tc 
+                JOIN information_schema.key_column_usage AS kcu
+                  ON tc.constraint_name = kcu.constraint_name
+                JOIN information_schema.constraint_column_usage AS ccu
+                  ON ccu.constraint_name = tc.constraint_name
+            WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name = '$table'
+        ";
+
+        self::$foreignKeysCache[$table] = [];
+
+        $rows = $pdo->query($query);
+        while($row = $rows->fetch())
+            self::$foreignKeysCache[$table][$row["column_name"]] = $row;
+
+        return self::$foreignKeysCache[$table];
+    }
+
+    /**
+     * Get an array of the columns names of all FOREIGN KEY columns for the specified table.
+     *
+     * @param string $table The table name to inspect.
+     * @return array Returns an array of the column names of all FOREIGN KEYs of the specified table.
+     * @throws DatabaseConnectionException
+     */
+    private static function getForeignKeysNames(string $table): array
+    {
+        if (self::$foreignKeysCache === null || !array_key_exists($table, self::$foreignKeysCache))
+            self::getForeignKeys($table);
+
+        return array_keys(self::$foreignKeysCache[$table]);
+    }
+
+    /**
+     * Checks to see if the specified column name for the specified table is a FOREIGN KEY.
+     *
+     * @param string $table The table name to inspect.
+     * @param string $column The column name to inspect.
+     * @return bool Returns TRUE if the specified column of the specified table is a FOREIGN KEY, otherwise FALSE.
+     * @throws DatabaseConnectionException
+     */
+    private static function isForeignKey(string $table, string $column): bool
+    {
+        return array_key_exists($column, self::getForeignKeys($table));
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Gets all of the NULL-able columns from the specified table schema.
+     *
+     * @param string $table The name of the table for which to inspect.
+     * @return array Returns an associative array of columns that are NULL-able.
+     * @throws DatabaseConnectionException
+     */
+    private static function getNullables(string $table): array
+    {
+        if (self::$nullablesCache !== null && array_key_exists($table, self::$nullablesCache))
+            return self::$nullablesCache[$table];
+
+        // Ensure the database is connected!
+        $pdo = Database::connect();
+
+        /** @noinspection SqlResolve */
+        $query = "
+            SELECT
+                column_name, data_type, is_nullable, column_default
+            FROM 
+                information_schema.columns
+            WHERE table_name = '$table' AND is_nullable = 'YES' 
+        ";
+
+        self::$nullablesCache[$table] = [];
+
+        $rows = $pdo->query($query);
+        while($row = $rows->fetch())
+            self::$nullablesCache[$table][$row["column_name"]] = $row;
+
+        return self::$nullablesCache[$table];
+    }
+
+    /**
+     * Gets all of the names of NULL-able columns from the specified table schema.
+     *
+     * @param string $table
+     * @return array
+     * @throws DatabaseConnectionException
+     */
+    private static function getNullableNames(string $table): array
+    {
+        if (self::$nullablesCache === null || !array_key_exists($table, self::$nullablesCache))
+            self::getNullables($table);
+
+        return array_keys(self::$nullablesCache[$table]);
+    }
+
+    /**
+     * Gets the NULL-ability of a column from the specified table schema.
+     *
+     * @param string $table The name of the table for which to inspect.
+     * @param string $column The name of the column for which to check.
+     * @return bool Returns TRUE if the column is NULL-able, otherwise FALSE.
+     * @throws DatabaseConnectionException
+     */
+    private static function isNullable(string $table, string $column): bool
+    {
+        // IF the nullables cache is not already built, THEN build it!
+        if (self::$nullablesCache === null || !array_key_exists($table, self::$nullablesCache))
+            self::getNullables($table);
+
+        // Return TRUE if the column is included in the nullables cache!
+        return array_key_exists($column, self::$nullablesCache[$table]);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+    /**
+     * @param string $directory
+     * @param string $namespace
+     * @param string $table
+     * @return string
+     * @throws DatabaseConnectionException
+     * @throws ModelCreationException
+     */
+    public static function create(string $directory, string $namespace, string $table): string
+    {
+        // Ensure the database is connected!
+        $pdo = Database::connect();
+
+        $primary = self::getPrimaryKey("client");
+        $primaryName = self::getPrimaryKeyName("client");
+        $isPrimary = self::isPrimaryKey("client", "client_id");
+
+        $foreigns = self::getForeignKeys("client");
+        $foreignsNames = self::getForeignKeysNames("client");
+        $isForeign = self::isForeignKey("client", "country_id");
+
+        $nullables = self::getNullables("client");
+        $previousIsp = self::isNullable("client", "previous_isp");
+        $clientType = self::isNullable("client", "client_type");
+
+        $another = self::getPrimaryKey("invoice");
+
+
+        if($directory !== "" && !file_exists($directory))
+            mkdir($directory, 0775, true);
+
+        $directory = realpath($directory);
+
+        if(!$directory)
+            throw new ModelCreationException("The directory '$directory' could not be created!");
+
+        if($namespace === "")
+            throw new ModelCreationException("The namespace '$namespace' is invalid!");
+
+        $className = self::snake2camel($table);
+        $class = $namespace."\\".$className;
+
+        $_namespace = (new PhpNamespace($namespace))
+            ->addUse("MVQN\\Data\\Models\\Model")
+            ->addUse("MVQN\\Data\\Annotations\\TableNameAnnotation", "TableName")
+            ->addUse("MVQN\\Data\\Annotations\\ColumnNameAnnotation", "ColumnName");
+
+        $_class = ($_namespace->addClass($className))
+            ->addExtend("MVQN\\Data\\Models\\Model")
+            ->setFinal()
+            ->addComment("Class $className")
+            ->addComment("")
+            ->addComment("@package ".dirname($namespace))
+            ->addComment("@author Ryan Spaeth <rspaeth@mvqn.net>")
+            ->addComment("@final");
+
+
+
+
+
+
+
+        $_code =
+            "<?php\n".
+            "declare(strict_types=1);\n".
+            "\n".
+            $_namespace;
+
+        file_put_contents($directory."/$className.php", $_code);
+
+
+        return $class;
+    }
+
+
 
 }

@@ -17,7 +17,8 @@
         "mvqn/common": "~1",
         "mvqn/annotations": "~1",
         "mvqn/collections": "~1",
-        "mvqn/dynamics": "~1"
+        "mvqn/dynamics": "~1",
+        "nette/php-generator": "~3.2"
     },
     "require-dev": {
         "phpunit/phpunit": "7.2.7",
