@@ -6,6 +6,7 @@ use MVQN\Data\Exceptions\ModelClassException;
 use MVQN\Data\Models\Model;
 use MVQN\UCRM\Data\Models\General;
 use MVQN\UCRM\Data\Models\Option;
+use MVQN\UCRM\Data\Models\User;
 use MVQN\UCRM\Data\Models\UserGroup;
 
 require_once __DIR__."/../../../../vendor/autoload.php";
@@ -118,12 +119,15 @@ class ModelTests extends \PHPUnit\Framework\TestCase
 
     public function testCreate()
     {
-        $test = Model::create(__DIR__."/../../UCRM/Data/Models/", "MVQN\\UCRM\\Data\\Models", "user");
+        //Model::create(__DIR__."/../../UCRM/Data/Models/", "MVQN\\UCRM\\Data\\Models", "user");
 
-        echo $test."\n";
+        /** @var User $user */
+        $user = User::where("userId", "=", 1)->first();
 
+        echo $user->getCreatedAt()->format("c")."\n";
+        echo $user->getUsername()."\n";
 
-
+        echo $user."\n";
     }
 
 

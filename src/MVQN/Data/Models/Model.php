@@ -13,7 +13,9 @@ use MVQN\Data\Exceptions\DatabaseConnectionException;
 use MVQN\Data\Exceptions\ModelClassException;
 use MVQN\Data\Exceptions\ModelMissingPropertyException;
 use Nette\PhpGenerator\ClassType;
+use Nette\PhpGenerator\Method;
 use Nette\PhpGenerator\PhpNamespace;
+use Nette\PhpGenerator\Property;
 
 /**
  * Class Model
@@ -36,14 +38,17 @@ abstract class Model extends AutoObject
 
 
 
-    /** @var array|null A cache for storing each Model's table => primary key pairings. */
+    /** @var array|null A cache for storing each Model's table name => primary key pairings. */
     private static $primaryKeyCache;
 
-    /** @var array|null A cache for storing each Model's table => foreign key pairings. */
+    /** @var array|null A cache for storing each Model's table name => foreign key pairings. */
     private static $foreignKeysCache;
 
-    /** @var array|null A cache for storing each Model's column => nullability pairings. */
+    /** @var array|null A cache for storing each Model's column name => nullability pairings. */
     private static $nullablesCache;
+
+    /** @var array|null A cache for storing each Model's column name => column pairings. */
+    private static $columnsCache;
 
     // =================================================================================================================
     // CONSTRUCTOR
@@ -81,6 +86,9 @@ abstract class Model extends AutoObject
             else
             {
                 // OTHERWISE no matching column => property pairing or @ColumnNameAnnotation was found!
+
+                $test = self::$columnPropertiesCache;
+
                 throw new ModelMissingPropertyException("Could not find a property '$name' of class '$class'.  ".
                     "Are you missing a '@ColumnNameAnnotation' on a property?");
             }
@@ -92,14 +100,14 @@ abstract class Model extends AutoObject
     // =================================================================================================================
 
     /**
-     * Converts a CamelCase string to it's snake_case equivalent.
+     * Converts a PascalCase string to it's snake_case equivalent.
      *
-     * @param string $camel The CamelCase string to convert.
+     * @param string $pascal The PascalCase string to convert.
      * @return string Return the snake_case equivalent.
      */
-    private static function camel2snake(string $camel): string
+    private static function pascal2snake(string $pascal): string
     {
-        preg_match_all('/((?:^|[A-Z])[a-z]+)/', $camel, $matches);
+        preg_match_all('/((?:^|[A-Z])[a-z]+)/', $pascal, $matches);
 
         if($matches !== null && count($matches) > 1 && count($matches[1]) > 1)
         {
@@ -109,21 +117,69 @@ abstract class Model extends AutoObject
         }
         else
         {
-            return lcfirst($camel);
+            return lcfirst($pascal);
         }
     }
 
     /**
-     * Converts a snake_case string to it's CamelCase equivalent.
+     * Converts a PascalCase string to it's camelCase equivalent.
+     *
+     * @param string $pascal The PascalCase string to convert.
+     * @return string Return the camelCase equivalent.
+     */
+    private static function pascal2camel(string $pascal): string
+    {
+        return lcfirst($pascal);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Converts a snake_case string to it's PascalCase equivalent.
      *
      * @param string $snake The snake_case string to convert.
-     * @return string Return the CamelCase equivalent.
+     * @return string Return the PascalCase equivalent.
      */
-    private static function snake2camel(string $snake): string
+    private static function snake2pascal(string $snake): string
     {
         $nameParts = explode("_", $snake);
         $nameParts = array_map("ucfirst", $nameParts);
         return implode("", $nameParts);
+    }
+
+    /**
+     * Converts a snake_case string to it's camelCase equivalent.
+     *
+     * @param string $snake The snake_case string to convert.
+     * @return string Return the camelCase equivalent.
+     */
+    private static function snake2camel(string $snake): string
+    {
+        return lcfirst(self::snake2pascal($snake));
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Converts a camelCase string to it's PascalCase equivalent.
+     *
+     * @param string $camel The camelCase string to convert.
+     * @return string Return the PascalCase equivalent.
+     */
+    private static function camel2pascal(string $camel): string
+    {
+        return ucfirst($camel);
+    }
+
+    /**
+     * Converts a camelCase string to it's snake_case equivalent.
+     *
+     * @param string $camel The camelCase string to convert.
+     * @return string Return the snake_case equivalent.
+     */
+    private static function camel2snake(string $camel): string
+    {
+        return self::pascal2snake(ucfirst($camel));
     }
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -236,7 +292,7 @@ abstract class Model extends AutoObject
             $short = $annotations->getReflectedClass()->getShortName();
 
             // Add the snake_case form of the class name to the cache.
-            self::$tableNameCache[$class] = self::camel2snake($short);
+            self::$tableNameCache[$class] = self::pascal2snake($short);
         }
 
         // THEN simply return that as the table name!
@@ -289,7 +345,7 @@ abstract class Model extends AutoObject
         $tableName = self::getTableName();
 
         // Build the SQL statement.
-        $sql = "SELECT * FROM $tableName";
+        $sql = "SELECT * FROM \"$tableName\"";
 
         // Fetch the results from the database.
         $results = $pdo->query($sql)->fetchAll();
@@ -343,8 +399,8 @@ abstract class Model extends AutoObject
                 "Are you missing a '@ColumnNameAnnotation' on a property?");
 
         // Build the SQL statement.
-        $sql = "SELECT * FROM $tableName WHERE $column $operator ".
-            (gettype($value) === "string" ? "'$value'" : "$value");
+        $sql = "SELECT * FROM \"$tableName\" WHERE \"$column\" $operator ".
+            (gettype($value) === "string" ? "\"$value\"" : "$value");
 
         // Fetch the results from the database.
         $results = $pdo->query($sql)->fetchAll();
@@ -571,6 +627,138 @@ abstract class Model extends AutoObject
     // -----------------------------------------------------------------------------------------------------------------
 
     /**
+     * Gets all of the columns from the specified table schema.
+     *
+     * @param string $table The name of the table for which to inspect.
+     * @return array Returns an associative array of column name => column schema data.
+     * @throws DatabaseConnectionException
+     */
+    private static function getColumns(string $table): array
+    {
+        if (self::$columnsCache !== null && array_key_exists($table, self::$columnsCache))
+            return self::$columnsCache[$table];
+
+        // Ensure the database is connected!
+        $pdo = Database::connect();
+
+        /** @noinspection SqlResolve */
+        $query = "
+            SELECT
+                *
+            FROM 
+                information_schema.columns
+            WHERE table_name = '$table'
+        ";
+
+        self::$columnsCache[$table] = [];
+
+        $rows = $pdo->query($query);
+        while($row = $rows->fetch())
+            self::$columnsCache[$table][$row["column_name"]] = $row;
+
+        return self::$columnsCache[$table];
+    }
+
+
+    private static function getColumn(string $table, string $column): array
+    {
+        return self::getColumns($table)[$column];
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+    private static function createProperty(ClassType &$class, array $column): Property
+    {
+        $name = self::snake2camel($column["column_name"]);
+
+        $nullable = $column["is_nullable"] === "YES";
+
+        $customGetter = null;
+
+        switch($column["data_type"])
+        {
+            case "boolean":
+                $type = "bool";
+                break;
+            case "integer":
+                $type = "int";
+                break;
+            case "character varying":
+                $type = "string";
+                break;
+            case "timestamp without time zone":
+                $type = "string";
+                $customGetter = (new Method("get".self::camel2pascal($name)))
+                    ->setVisibility("public")
+                    ->addComment("@return \\DateTimeImmutable".($nullable ? "|null" : ""))
+                    ->addComment("@throws \\Exception")
+                    ->addBody("return new \DateTimeImmutable(\$this->$name);");
+                break;
+            case "text":
+                $type = "string";
+                break;
+            case "json":
+                $type = "string";
+                $customGetter = (new Method("get".self::camel2pascal($name)))
+                    ->setVisibility("public")
+                    ->addComment("@return array".($nullable ? "|null" : ""))
+                    //->addComment("@throws \\Exception")
+                    ->addBody("return json_decode(\$this->$name, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);");
+                break;
+            case "USER-DEFINED":
+                // EXTENSION!
+                $extension = $column["udt_name"];
+
+                switch($extension)
+                {
+                    case "citext": // Case-Insensitive Text
+                        $type = "string";
+                        break;
+
+                    // TODO: Add other extensions as we find them!
+
+                    default:
+                        // Unsupported extension, just used string ???
+                        $type = "string";
+                        break;
+                }
+                break;
+
+
+            default:
+                $type = $column["data_type"];
+                throw new ModelCreationException("The '$type' data type needs to be added!");
+                break;
+        }
+
+        $_property = (new Property($name))
+            ->setVisibility("protected")
+            ->addComment("@var $type".($nullable ? "|null" : ""))
+            ->addComment($name !== $column["column_name"] ? "@ColumnName ".$column["column_name"] : "");
+
+
+        if($class !== null)
+        {
+            if($customGetter !== null)
+            {
+                $class->addComment("@see    $type" . ($nullable ? "|null" : "") . " get" . self::camel2pascal($name) . "()");
+                $class->addMember($customGetter);
+            }
+            else
+            {
+                $class->addComment("@method $type" . ($nullable ? "|null" : "") . " get" . self::camel2pascal($name) . "()");
+            }
+
+
+            $class->addMember($_property);
+        }
+
+        return $_property;
+    }
+
+
+
+    /**
      * @param string $directory
      * @param string $namespace
      * @param string $table
@@ -583,21 +771,6 @@ abstract class Model extends AutoObject
         // Ensure the database is connected!
         $pdo = Database::connect();
 
-        $primary = self::getPrimaryKey("client");
-        $primaryName = self::getPrimaryKeyName("client");
-        $isPrimary = self::isPrimaryKey("client", "client_id");
-
-        $foreigns = self::getForeignKeys("client");
-        $foreignsNames = self::getForeignKeysNames("client");
-        $isForeign = self::isForeignKey("client", "country_id");
-
-        $nullables = self::getNullables("client");
-        $previousIsp = self::isNullable("client", "previous_isp");
-        $clientType = self::isNullable("client", "client_type");
-
-        $another = self::getPrimaryKey("invoice");
-
-
         if($directory !== "" && !file_exists($directory))
             mkdir($directory, 0775, true);
 
@@ -609,7 +782,7 @@ abstract class Model extends AutoObject
         if($namespace === "")
             throw new ModelCreationException("The namespace '$namespace' is invalid!");
 
-        $className = self::snake2camel($table);
+        $className = self::snake2pascal($table);
         $class = $namespace."\\".$className;
 
         $_namespace = (new PhpNamespace($namespace))
@@ -624,10 +797,17 @@ abstract class Model extends AutoObject
             ->addComment("")
             ->addComment("@package ".dirname($namespace))
             ->addComment("@author Ryan Spaeth <rspaeth@mvqn.net>")
-            ->addComment("@final");
+            ->addComment("@final")
+            ->addComment("")
+            ->addComment("@TableName $table");
 
+        $columns = self::getColumns($table);
 
+        if(count($columns) > 0)
+            $_class->addComment("");
 
+        foreach($columns as $column)
+            $_class->addMember(self::createProperty($_class, $column));
 
 
 

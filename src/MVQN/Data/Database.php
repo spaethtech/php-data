@@ -132,7 +132,7 @@ final class Database
 
         // Generate a SQL statement, given the provided parameters.
         $sql =
-            "SELECT ".($columns === [] ? "*" : implode(", ", $columns))." FROM $table".
+            "SELECT ".($columns === [] ? "*" : "\"".implode("\", \"", $columns)."\"")." FROM \"$table\"".
             ($orderBy !== "" ? " ORDER BY $orderBy" : "");
 
         // Execute the query.
@@ -159,7 +159,7 @@ final class Database
 
         // Generate a SQL statement, given the provided parameters.
         $sql =
-            "SELECT ".($columns === [] ? "*" : implode(", ", $columns))." FROM $table".
+            "SELECT ".($columns === [] ? "*" : "\"".implode("\", \"", $columns)."\"")." FROM \"$table\"".
             ($where !== "" ? " WHERE $where"  : "").
             ($orderBy !== "" ? " ORDER BY $orderBy" : "");
 

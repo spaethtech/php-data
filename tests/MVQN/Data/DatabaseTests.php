@@ -116,5 +116,15 @@ class DatabaseTests extends \PHPUnit\Framework\TestCase
         echo "\n";
     }
 
+    public function testTypes()
+    {
+        $user = Database::select("user");
+
+        $test = $user[0]["backup_codes"];
+
+
+        echo "";
+    }
+
 
 }
