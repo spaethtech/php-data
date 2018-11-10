@@ -99,88 +99,7 @@ abstract class Model extends AutoObject
     // HELPERS
     // =================================================================================================================
 
-    /**
-     * Converts a PascalCase string to it's snake_case equivalent.
-     *
-     * @param string $pascal The PascalCase string to convert.
-     * @return string Return the snake_case equivalent.
-     */
-    private static function pascal2snake(string $pascal): string
-    {
-        preg_match_all('/((?:^|[A-Z])[a-z]+)/', $pascal, $matches);
 
-        if($matches !== null && count($matches) > 1 && count($matches[1]) > 1)
-        {
-            $nameParts = $matches[1];
-            $nameParts = array_map("lcfirst", $nameParts);
-            return implode("_", $nameParts);
-        }
-        else
-        {
-            return lcfirst($pascal);
-        }
-    }
-
-    /**
-     * Converts a PascalCase string to it's camelCase equivalent.
-     *
-     * @param string $pascal The PascalCase string to convert.
-     * @return string Return the camelCase equivalent.
-     */
-    private static function pascal2camel(string $pascal): string
-    {
-        return lcfirst($pascal);
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
-
-    /**
-     * Converts a snake_case string to it's PascalCase equivalent.
-     *
-     * @param string $snake The snake_case string to convert.
-     * @return string Return the PascalCase equivalent.
-     */
-    private static function snake2pascal(string $snake): string
-    {
-        $nameParts = explode("_", $snake);
-        $nameParts = array_map("ucfirst", $nameParts);
-        return implode("", $nameParts);
-    }
-
-    /**
-     * Converts a snake_case string to it's camelCase equivalent.
-     *
-     * @param string $snake The snake_case string to convert.
-     * @return string Return the camelCase equivalent.
-     */
-    private static function snake2camel(string $snake): string
-    {
-        return lcfirst(self::snake2pascal($snake));
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
-
-    /**
-     * Converts a camelCase string to it's PascalCase equivalent.
-     *
-     * @param string $camel The camelCase string to convert.
-     * @return string Return the PascalCase equivalent.
-     */
-    private static function camel2pascal(string $camel): string
-    {
-        return ucfirst($camel);
-    }
-
-    /**
-     * Converts a camelCase string to it's snake_case equivalent.
-     *
-     * @param string $camel The camelCase string to convert.
-     * @return string Return the snake_case equivalent.
-     */
-    private static function camel2snake(string $camel): string
-    {
-        return self::pascal2snake(ucfirst($camel));
-    }
 
     // -----------------------------------------------------------------------------------------------------------------
 
@@ -400,7 +319,7 @@ abstract class Model extends AutoObject
 
         // Build the SQL statement.
         $sql = "SELECT * FROM \"$tableName\" WHERE \"$column\" $operator ".
-            (gettype($value) === "string" ? "\"$value\"" : "$value");
+            (gettype($value) === "string" ? "'$value'" : "$value");
 
         // Fetch the results from the database.
         $results = $pdo->query($sql)->fetchAll();
