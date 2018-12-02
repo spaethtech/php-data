@@ -419,6 +419,86 @@ abstract class Model extends AutoObject
 
 
 
+    public function update(array $columns = []): self
+    {
+        // Ensure the database is connected!
+        $pdo = Database::connect();
+
+        // Get the calling child class, ensuring that the Model class was not used!
+        $class = self::getStaticChildClass();
+
+        // Get the table name from either a @TableNameAnnotation or an automated conversion from the class name...
+        $tableName = self::getTableName();
+
+        //$annotationReader = new AnnotationReader($class);
+
+        $nullables = self::getNullableNames($tableName);
+        $primaryKey = self::getPrimaryKeyName($tableName);
+        $primaryKeyProperty = self::$columnPropertiesCache[$class][$primaryKey][0];
+
+        if($this->$primaryKeyProperty === null)
+            throw new \Exception("Primary Key must not be NULL when using 'Model::insert()'!");
+
+        $values = [];
+
+        foreach(get_object_vars($this) as $property => $value)
+        {
+            // Lookup the correct column name.
+            $column = self::getColumnName($property);
+
+            if($columns !== [] && in_array($column, $columns))
+                continue;
+
+            if($column === $primaryKey)
+                continue;
+
+            if(!in_array($column, $nullables) && $value === null)
+                throw new \Exception("Column '$column' is set as NOT NULL and currently contains a NULL value!");
+
+            $values[$column] = $value;
+        }
+
+
+        // Build the SQL statement.
+        $sql = "UPDATE \"$tableName\" ";
+
+        $vals = [];
+
+        foreach($values as $column => $value)
+        {
+            switch(gettype($value))
+            {
+                case "string":
+                    $vals[] = "\"$column\" = '$value'";
+                    break;
+
+                case "boolean":
+                    $vals[] = "\"$column\" = ".($value ? "TRUE" : "FALSE");
+                    break;
+
+                default:
+                    $vals[] = "\"$column\" = ".($value === null ? "NULL" : "$value");
+                    break;
+            }
+        }
+
+
+
+        $sql .= "SET ".implode(", ", $vals)." WHERE $primaryKey = {$this->$primaryKeyProperty}";
+
+        // Fetch the results from the database.
+        $results = $pdo->exec($sql);
+
+        if($results === false && count($pdo->errorInfo()) >= 3)
+            throw new \Exception($pdo->errorInfo()[2], $pdo->errorInfo()[1]);
+
+        $id = $this->$primaryKeyProperty;
+        $last = self::where($primaryKey, "=", $id)->first();
+
+        return $last;
+    }
+
+
     // =================================================================================================================
     // METHODS: SCHEMA
     // =================================================================================================================
