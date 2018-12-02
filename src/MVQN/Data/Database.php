@@ -170,4 +170,64 @@ final class Database
         return $results;
     }
 
+
+
+
+
+    public static function insert(string $table, array $values, array $columns = []): int
+    {
+        // Get a connection to the database.
+        $pdo = self::connect();
+
+        // Generate a SQL statement, given the provided parameters.
+        $sql =
+            "INSERT INTO \"$table\" (".($columns === [] ?
+                "\"".implode("\", \"", array_keys($values))."\"" : "\"".implode("\", \"", $columns)."\"").") VALUES (";
+
+        $vals = [];
+
+        foreach($values as $column => $value)
+        {
+            if($columns !== [] && !in_array($column, $columns))
+                continue;
+
+            $vals[] = $value;
+
+        }
+
+        $sql .= "'".implode("', '", $vals)."');";
+
+        // Execute the query.
+        $results = $pdo->exec($sql);//  prepare($sql)->execute();
+
+        if($results === false && count($pdo->errorInfo()) >= 3)
+            echo $pdo->errorInfo()[2]."\n";
+
+        // Return the results!
+        return $results === false ? 0 : $results;
+    }
+
+
+
+
+    public static function delete(string $table, string $where): int
+    {
+        // Get a connection to the database.
+        $pdo = self::connect();
+
+        // Generate a SQL statement, given the provided parameters.
+        $sql =
+            "DELETE FROM \"$table\"".
+            ($where !== "" ? " WHERE $where" : "");
+
+        // Execute the query.
+        $results = $pdo->exec($sql);//  prepare($sql)->execute();
+
+        if($results === false && count($pdo->errorInfo()) >= 3)
+            echo $pdo->errorInfo()[2]."\n";
+
+        // Return the results!
+        return $results === false ? 0 : $results;
+    }
+
 }
