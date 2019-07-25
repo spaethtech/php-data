@@ -116,6 +116,22 @@ final class Database
     // METHODS: QUERYING
     // =================================================================================================================
 
+    public static function query(string $query, array $params = []): array
+    {
+        // Get a connection to the database.
+        $pdo = self::connect();
+
+        // Generate a SQL statement, given the provided parameters.
+        $sql = $pdo->prepare($query);
+        $sql->execute($params);
+
+        // Execute the query.
+        $results = $sql->fetchAll();
+
+        // Return the results!
+        return $results;
+    }
+
     /**
      * Issues a SELECT query to the database.
      *
