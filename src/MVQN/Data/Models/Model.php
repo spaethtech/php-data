@@ -5,6 +5,7 @@ namespace MVQN\Data\Models;
 
 use MVQN\Annotations\AnnotationReader;
 use MVQN\Collections\Collection;
+use MVQN\Common\Casings;
 use MVQN\Data\Exceptions\ModelCreationException;
 use MVQN\Dynamics\AutoObject;
 use MVQN\Data\Database;
@@ -64,6 +65,8 @@ abstract class Model extends AutoObject
      */
     public function __construct(array $data = [])
     {
+        parent::__construct($data);
+
         // Get this class name.
         $class = get_class($this);
 
@@ -211,7 +214,7 @@ abstract class Model extends AutoObject
             $short = $annotations->getReflectedClass()->getShortName();
 
             // Add the snake_case form of the class name to the cache.
-            self::$tableNameCache[$class] = self::pascal2snake($short);
+            self::$tableNameCache[$class] = Casings::pascal2snake($short);
         }
 
         // THEN simply return that as the table name!
@@ -765,7 +768,7 @@ abstract class Model extends AutoObject
                 break;
             case "timestamp without time zone":
                 $type = "string";
-                $customGetter = (new Method("get".self::camel2pascal($name)))
+                $customGetter = (new Method("get".Casings::camel2pascal($name)))
                     ->setVisibility("public")
                     ->addComment("@return \\DateTimeImmutable".($nullable ? "|null" : ""))
                     ->addComment("@throws \\Exception")
@@ -776,7 +779,7 @@ abstract class Model extends AutoObject
                 break;
             case "json":
                 $type = "string";
-                $customGetter = (new Method("get".self::camel2pascal($name)))
+                $customGetter = (new Method("get".Casings::camel2pascal($name)))
                     ->setVisibility("public")
                     ->addComment("@return array".($nullable ? "|null" : ""))
                     //->addComment("@throws \\Exception")
@@ -818,12 +821,12 @@ abstract class Model extends AutoObject
         {
             if($customGetter !== null)
             {
-                $class->addComment("@see    $type" . ($nullable ? "|null" : "") . " get" . self::camel2pascal($name) . "()");
+                $class->addComment("@see    $type" . ($nullable ? "|null" : "") . " get" . Casings::camel2pascal($name) . "()");
                 $class->addMember($customGetter);
             }
             else
             {
-                $class->addComment("@method $type" . ($nullable ? "|null" : "") . " get" . self::camel2pascal($name) . "()");
+                $class->addComment("@method $type" . ($nullable ? "|null" : "") . " get" . Casings::camel2pascal($name) . "()");
             }
 
 
@@ -859,7 +862,7 @@ abstract class Model extends AutoObject
         if($namespace === "")
             throw new ModelCreationException("The namespace '$namespace' is invalid!");
 
-        $className = self::snake2pascal($table);
+        $className = Casings::snake2pascal($table);
         $class = $namespace."\\".$className;
 
         $_namespace = (new PhpNamespace($namespace))

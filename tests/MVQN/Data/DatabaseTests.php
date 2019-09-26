@@ -28,11 +28,11 @@ class DatabaseTests extends \PHPUnit\Framework\TestCase
         $env->load();
 
         $this->pdo = Database::connect(
-            getenv("POSTGRES_HOST"),
-            (int)getenv("POSTGRES_PORT"),
-            getenv("POSTGRES_DB"),
-            getenv("POSTGRES_USER"),
-            getenv("POSTGRES_PASSWORD"));
+            getenv("DATABASE_HOST"),
+            (int)getenv("DATABASE_PORT"),
+            getenv("DATABASE_NAME"),
+            getenv("DATABASE_USER"),
+            getenv("DATABASE_PASSWORD"));
     }
 
     public function testConnect()
@@ -60,10 +60,12 @@ class DatabaseTests extends \PHPUnit\Framework\TestCase
 
     public function testWhere()
     {
-        $results = Database::where("option", "code = 'MAILER_PASSWORD'" );
+        //Database::schema("unms");
+        $results = Database::where("unms.ucrm.option", "code = 'SITE_NAME'");
         echo json_encode($results, self::JSON_OPTIONS)."\n";
         $this->assertCount(1, $results);
 
+        /*
         $results = Database::where("option", "code = 'MAILER_PASSWORD'", [ "code", "value" ]);
         echo json_encode($results, self::JSON_OPTIONS)."\n";
         $this->assertCount(1, $results);
@@ -73,6 +75,7 @@ class DatabaseTests extends \PHPUnit\Framework\TestCase
         $this->assertCount(1, $results);
 
         echo "\n";
+        */
     }
 
     public function testModelAbstractionStatic()

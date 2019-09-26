@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace MVQN\Data;
 
+use MVQN\Common\Strings;
+use \Exception;
+
 /**
  * Class Database
  *
@@ -34,6 +37,9 @@ final class Database
     /** @var \PDO|null The database object. */
     private static $pdo;
 
+    /** @var string[] */
+    private static $schemas;
+
     // =================================================================================================================
     // METHODS: CONNECTION
     // =================================================================================================================
@@ -62,31 +68,31 @@ final class Database
         if($host === "" && (self::$databaseHost === null || self::$databaseHost === ""))
             throw new Exceptions\DatabaseConnectionException("A valid host name was not provided!");
         // OTHERWISE, set the hostname to the one provided or the previous one if none was provided.
-        $host = $host ?: self::$databaseHost;
+        self::$databaseHost = $host = $host ?: self::$databaseHost;
 
         // IF no port number was provided AND port number was not previously set, THEN throw an Exception!
         if($port === 0 && (self::$databasePort === null || self::$databasePort === 0))
             throw new Exceptions\DatabaseConnectionException("A valid port number was not provided!");
         // OTHERWISE, set the port number to the one provided or the previous one if none was provided.
-        $port = $port ?: self::$databasePort;
+        self::$databasePort = $port = $port ?: self::$databasePort;
 
         // IF no database name was provided AND database name was not previously set, THEN throw an Exception!
         if($dbname === "" && (self::$databaseName === null || self::$databaseName === ""))
             throw new Exceptions\DatabaseConnectionException("A valid database name was not provided!");
         // OTHERWISE, set the database name to the one provided or the previous one if none was provided.
-        $dbname = $dbname ?: self::$databaseName;
+        self::$databaseName = $dbname = $dbname ?: self::$databaseName;
 
         // IF no username was provided AND username was not previously set, THEN throw an Exception!
         if($user === "" && (self::$databaseUser === null || self::$databaseUser === ""))
             throw new Exceptions\DatabaseConnectionException("A valid username was not provided!");
         // OTHERWISE, set the username to the one provided or the previous one if none was provided.
-        $user = $user ?: self::$databaseUser;
+        self::$databaseUser = $user = $user ?: self::$databaseUser;
 
         // IF no password was provided AND password was not previously set, THEN throw an Exception!
         if($pass === "" && (self::$databasePass === null || self::$databasePass === ""))
             throw new Exceptions\DatabaseConnectionException("A valid password was not provided!");
         // OTHERWISE, set the password to the one provided or the previous one if none was provided.
-        $pass = $pass ?: self::$databasePass;
+        self::$databasePass = $pass = $pass ?: self::$databasePass;
 
         // All pre-checks should have ensured a valid state for connection!
 
@@ -97,6 +103,14 @@ final class Database
                 // Setting some default options.
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
             ]);
+
+            self::$schemas = array_map(
+                function($schema)
+                {
+                    return $schema["schema_name"];
+                },
+                self::$pdo->query("SELECT schema_name FROM information_schema.schemata")->fetchAll()
+            );
 
             // IF the connection is valid, return the new database object!
             if(self::$pdo)
@@ -173,6 +187,43 @@ final class Database
         // Get a connection to the database.
         $pdo = self::connect();
 
+        if(Strings::contains($table, "."))
+        {
+            $_table     = "";
+            $_database  = "";
+            $_schema    = "";
+
+            switch(count($parts = explode(".", $table)))
+            {
+                case 1  :   list($_table)                       = $parts;   break;
+                case 2  :   list($_schema, $_table)             = $parts;   break;
+                case 3  :   list($_database, $_schema, $_table) = $parts;   break;
+
+                default :   throw new Exception("Invalid '[[database.]schema.]table' format!");
+            }
+
+            if($_database !== "" && $_database !== self::$databaseName)
+            {
+                throw new Exception(
+                    "Invalid database reference '$_database' in the table syntax '$table', as this PDO is already ".
+                    "connected to the '".self::$databaseName."' database and would need to be re-created!"
+                );
+            }
+
+            if($_schema !== "" && !in_array($_schema, self::$schemas))
+            {
+                throw new Exception(
+                    "Invalid schema reference '$_schema' in the table syntax '$table', as the schema does not exist ".
+                    "in the '".self::$databaseName."' database!"
+                );
+            }
+
+            $pdo->exec("SET search_path TO $_schema");
+
+            $table = $_table;
+        }
+
+
         // Generate a SQL statement, given the provided parameters.
         $sql =
             "SELECT ".($columns === [] ? "*" : "\"".implode("\", \"", $columns)."\"")." FROM \"$table\"".
@@ -244,6 +295,14 @@ final class Database
 
         // Return the results!
         return $results === false ? 0 : $results;
+    }
+
+    public static function schema(string $schema)
+    {
+        // Get a connection to the database.
+        $pdo = self::connect();
+
+        $pdo->exec("SET search_path TO $schema");
     }
 
 }
