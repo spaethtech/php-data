@@ -415,6 +415,7 @@ abstract class Model extends AutoObject
             throw new \Exception($pdo->errorInfo()[2], $pdo->errorInfo()[1]);
 
         $id = $pdo->lastInsertId();
+        /** @var Model $last */
         $last = self::where($primaryKey, "=", $id)->first();
 
         return $last;
@@ -496,6 +497,7 @@ abstract class Model extends AutoObject
             throw new \Exception($pdo->errorInfo()[2], $pdo->errorInfo()[1]);
 
         $id = $this->$primaryKeyProperty;
+        /** @var Model $last */
         $last = self::where($primaryKey, "=", $id)->first();
 
         return $last;
@@ -749,7 +751,7 @@ abstract class Model extends AutoObject
 
     private static function createProperty(ClassType &$class, array $column): Property
     {
-        $name = self::snake2camel($column["column_name"]);
+        $name = Casings::snake2camel($column["column_name"]);
 
         $nullable = $column["is_nullable"] === "YES";
 

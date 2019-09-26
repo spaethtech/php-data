@@ -172,26 +172,13 @@ final class Database
         return $results;
     }
 
-    /**
-     * Issues a SELECT/WHERE query to the database.
-     *
-     * @param string $table The table for which to make the query.
-     * @param string $where An optional WHERE clause to use for matching, when omitted a SELECT query is made instead.
-     * @param array $columns An optional array of column names to be returned.
-     * @param string $orderBy An optional ORDER BY suffix for sorting.
-     * @return array Returns an associative array of matching rows from the database.
-     * @throws Exceptions\DatabaseConnectionException
-     */
-    public static function where(string $table, string $where = "", array $columns = [], string $orderBy = ""): array
+    private static function parseTable(string $table): array
     {
-        // Get a connection to the database.
-        $pdo = self::connect();
-
         if(Strings::contains($table, "."))
         {
-            $_table     = "";
             $_database  = "";
             $_schema    = "";
+            $_table     = "";
 
             switch(count($parts = explode(".", $table)))
             {
@@ -218,11 +205,37 @@ final class Database
                 );
             }
 
-            $pdo->exec("SET search_path TO $_schema");
+            return [
+                "database"  =>  $_database,
+                "schema"    =>  $_schema,
+                "table"     =>  $_table,
+            ];
 
-            $table = $_table;
         }
 
+
+    }
+
+
+    /**
+     * Issues a SELECT/WHERE query to the database.
+     *
+     * @param string $table The table for which to make the query.
+     * @param string $where An optional WHERE clause to use for matching, when omitted a SELECT query is made instead.
+     * @param array $columns An optional array of column names to be returned.
+     * @param string $orderBy An optional ORDER BY suffix for sorting.
+     * @return array Returns an associative array of matching rows from the database.
+     * @throws Exceptions\DatabaseConnectionException
+     */
+    public static function where(string $table, string $where = "", array $columns = [], string $orderBy = ""): array
+    {
+        // Get a connection to the database.
+        $pdo = self::connect();
+
+        list($database, $schema, $table) = array_values(self::parseTable($table));
+
+        if($schema !== "")
+            $pdo->exec("SET search_path TO $schema");
 
         // Generate a SQL statement, given the provided parameters.
         $sql =
@@ -230,11 +243,8 @@ final class Database
             ($where !== "" ? " WHERE $where"  : "").
             ($orderBy !== "" ? " ORDER BY $orderBy" : "");
 
-        // Execute the query.
-        $results = $pdo->query($sql)->fetchAll();
-
-        // Return the results!
-        return $results;
+        // Execute the query and return the results!
+        return $pdo->query($sql)->fetchAll();
     }
 
 
@@ -245,6 +255,11 @@ final class Database
     {
         // Get a connection to the database.
         $pdo = self::connect();
+
+        list($database, $schema, $table) = array_values(self::parseTable($table));
+
+        if($schema !== "")
+            $pdo->exec("SET search_path TO $schema");
 
         // Generate a SQL statement, given the provided parameters.
         $sql =
@@ -282,6 +297,11 @@ final class Database
         // Get a connection to the database.
         $pdo = self::connect();
 
+        list($database, $schema, $table) = array_values(self::parseTable($table));
+
+        if($schema !== "")
+            $pdo->exec("SET search_path TO $schema");
+
         // Generate a SQL statement, given the provided parameters.
         $sql =
             "DELETE FROM \"$table\"".
@@ -297,6 +317,8 @@ final class Database
         return $results === false ? 0 : $results;
     }
 
+
+    /*
     public static function schema(string $schema)
     {
         // Get a connection to the database.
@@ -304,5 +326,6 @@ final class Database
 
         $pdo->exec("SET search_path TO $schema");
     }
+    */
 
 }
