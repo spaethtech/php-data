@@ -160,6 +160,11 @@ final class Database
         // Get a connection to the database.
         $pdo = self::connect();
 
+        list($database, $schema, $table) = array_values(self::parseTable($table));
+
+        if($schema !== "")
+            $pdo->exec("SET search_path TO $schema");
+
         // Generate a SQL statement, given the provided parameters.
         $sql =
             "SELECT ".($columns === [] ? "*" : "\"".implode("\", \"", $columns)."\"")." FROM \"$table\"".
@@ -174,6 +179,12 @@ final class Database
 
     private static function parseTable(string $table): array
     {
+        $results = [
+            "database"  =>  "",
+            "schema"    =>  "",
+            "table"     =>  $table,
+        ];
+
         if(Strings::contains($table, "."))
         {
             $_database  = "";
@@ -205,7 +216,7 @@ final class Database
                 );
             }
 
-            return [
+            $results = [
                 "database"  =>  $_database,
                 "schema"    =>  $_schema,
                 "table"     =>  $_table,
@@ -213,6 +224,7 @@ final class Database
 
         }
 
+        return $results;
 
     }
 
