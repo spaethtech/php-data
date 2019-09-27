@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace MVQN\Data\Models;
 
+use Exception;
 use MVQN\Annotations\AnnotationReader;
 use MVQN\Collections\Collection;
 use MVQN\Common\Casings;
@@ -243,6 +244,61 @@ abstract class Model extends AutoObject
         return $class;
     }
 
+    private static function parseTable(string $table): array
+    {
+        $results = [
+            "database"  =>  "",
+            "schema"    =>  "",
+            "table"     =>  $table,
+        ];
+
+        if(strpos($table, ".") !== false)
+        {
+            $_database  = "";
+            $_schema    = "";
+            $_table     = "";
+
+            switch(count($parts = explode(".", $table)))
+            {
+                case 1  :   list($_table)                       = $parts;   break;
+                case 2  :   list($_schema, $_table)             = $parts;   break;
+                case 3  :   list($_database, $_schema, $_table) = $parts;   break;
+
+                default :   throw new Exception("Invalid '[[database.]schema.]table' format!");
+            }
+
+            /*
+            if($_database !== "" && $_database !== self::$databaseName)
+            {
+                throw new Exception(
+                    "Invalid database reference '$_database' in the table syntax '$table', as this PDO is already ".
+                    "connected to the '".self::$databaseName."' database and would need to be re-created!"
+                );
+            }
+
+            if($_schema !== "" && !in_array($_schema, self::$schemas))
+            {
+                throw new Exception(
+                    "Invalid schema reference '$_schema' in the table syntax '$table', as the schema does not exist ".
+                    "in the '".self::$databaseName."' database!"
+                );
+            }
+            */
+
+            $results = [
+                "database"  =>  $_database,
+                "schema"    =>  $_schema,
+                "table"     =>  $_table,
+            ];
+
+        }
+
+        return $results;
+
+    }
+
+
+
     // =================================================================================================================
     // METHODS: QUERYING
     // =================================================================================================================
@@ -266,8 +322,10 @@ abstract class Model extends AutoObject
         // Get the table name from either a @TableNameAnnotation or an automated conversion from the class name...
         $tableName = self::getTableName();
 
+        list($database, $schema, $table) = array_values(self::parseTable($tableName));
+
         // Build the SQL statement.
-        $sql = "SELECT * FROM \"$tableName\"";
+        $sql = "SELECT * FROM ".($schema !== "" ? "\"$schema\"." : "")."\"$table\"";
 
         // Fetch the results from the database.
         $results = $pdo->query($sql)->fetchAll();
@@ -320,8 +378,10 @@ abstract class Model extends AutoObject
             throw new ModelMissingPropertyException("Could not find a property '$column' of class '$class'.  ".
                 "Are you missing a '@ColumnNameAnnotation' on a property?");
 
+        list($database, $schema, $table) = array_values(self::parseTable($tableName));
+
         // Build the SQL statement.
-        $sql = "SELECT * FROM \"$tableName\" WHERE \"$column\" $operator ".
+        $sql = "SELECT * FROM ".($schema !== "" ? "\"$schema\"." : "")."\"$table\" WHERE \"$column\" $operator ".
             (gettype($value) === "string" ? "'$value'" : "$value");
 
         // Fetch the results from the database.
@@ -375,14 +435,15 @@ abstract class Model extends AutoObject
                 continue;
 
             if(!in_array($column, $nullables) && $value === null)
-                throw new \Exception("Column '$column' is set as NOT NULL and currently contains a NULL value!");
+                throw new Exception("Column '$column' is set as NOT NULL and currently contains a NULL value!");
 
             $values[$column] = $value;
         }
 
+        list($database, $schema, $table) = array_values(self::parseTable($tableName));
 
         // Build the SQL statement.
-        $sql = "INSERT INTO \"$tableName\" ".("(\"".implode("\", \"", array_keys($values))."\")")." VALUES ";
+        $sql = "INSERT INTO ".($schema !== "" ? "\"$schema\"." : "")."\"$table\" ".("(\"".implode("\", \"", array_keys($values))."\")")." VALUES ";
 
         $vals = [];
 
@@ -412,7 +473,7 @@ abstract class Model extends AutoObject
         $results = $pdo->exec($sql);
 
         if($results === false && count($pdo->errorInfo()) >= 3)
-            throw new \Exception($pdo->errorInfo()[2], $pdo->errorInfo()[1]);
+            throw new Exception($pdo->errorInfo()[2], $pdo->errorInfo()[1]);
 
         $id = $pdo->lastInsertId();
         /** @var Model $last */
@@ -441,7 +502,7 @@ abstract class Model extends AutoObject
         $primaryKeyProperty = self::$columnPropertiesCache[$class][$primaryKey][0];
 
         if($this->$primaryKeyProperty === null)
-            throw new \Exception("Primary Key must not be NULL when using 'Model::insert()'!");
+            throw new Exception("Primary Key must not be NULL when using 'Model::insert()'!");
 
         $values = [];
 
@@ -457,14 +518,15 @@ abstract class Model extends AutoObject
                 continue;
 
             if(!in_array($column, $nullables) && $value === null)
-                throw new \Exception("Column '$column' is set as NOT NULL and currently contains a NULL value!");
+                throw new Exception("Column '$column' is set as NOT NULL and currently contains a NULL value!");
 
             $values[$column] = $value;
         }
 
+        list($database, $schema, $table) = array_values(self::parseTable($tableName));
 
         // Build the SQL statement.
-        $sql = "UPDATE \"$tableName\" ";
+        $sql = "UPDATE ".($schema !== "" ? "\"$schema\"." : "")."\"$table\" ";
 
         $vals = [];
 
@@ -494,7 +556,7 @@ abstract class Model extends AutoObject
         $results = $pdo->exec($sql);
 
         if($results === false && count($pdo->errorInfo()) >= 3)
-            throw new \Exception($pdo->errorInfo()[2], $pdo->errorInfo()[1]);
+            throw new Exception($pdo->errorInfo()[2], $pdo->errorInfo()[1]);
 
         $id = $this->$primaryKeyProperty;
         /** @var Model $last */

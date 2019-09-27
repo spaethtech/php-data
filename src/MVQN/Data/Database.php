@@ -162,12 +162,12 @@ final class Database
 
         list($database, $schema, $table) = array_values(self::parseTable($table));
 
-        if($schema !== "")
-            $pdo->exec("SET search_path TO $schema");
+        //if($schema !== "")
+        //    $pdo->exec("SET search_path TO $schema");
 
         // Generate a SQL statement, given the provided parameters.
         $sql =
-            "SELECT ".($columns === [] ? "*" : "\"".implode("\", \"", $columns)."\"")." FROM \"$table\"".
+            "SELECT ".($columns === [] ? "*" : "\"".implode("\", \"", $columns)."\"")." FROM ".($schema !== "" ? "\"$schema\"." : "")."\"$table\"".
             ($orderBy !== "" ? " ORDER BY $orderBy" : "");
 
         // Execute the query.
@@ -246,12 +246,12 @@ final class Database
 
         list($database, $schema, $table) = array_values(self::parseTable($table));
 
-        if($schema !== "")
-            $pdo->exec("SET search_path TO $schema");
+        //if($schema !== "")
+        //    $pdo->exec("SET search_path TO $schema");
 
         // Generate a SQL statement, given the provided parameters.
         $sql =
-            "SELECT ".($columns === [] ? "*" : "\"".implode("\", \"", $columns)."\"")." FROM \"$table\"".
+            "SELECT ".($columns === [] ? "*" : "\"".implode("\", \"", $columns)."\"")." FROM ".($schema !== "" ? "\"$schema\"." : "")."\"$table\"".
             ($where !== "" ? " WHERE $where"  : "").
             ($orderBy !== "" ? " ORDER BY $orderBy" : "");
 
@@ -311,12 +311,12 @@ final class Database
 
         list($database, $schema, $table) = array_values(self::parseTable($table));
 
-        if($schema !== "")
-            $pdo->exec("SET search_path TO $schema");
+        //if($schema !== "")
+        //    $pdo->exec("SET search_path TO $schema");
 
         // Generate a SQL statement, given the provided parameters.
         $sql =
-            "DELETE FROM \"$table\"".
+            "DELETE FROM ".($schema !== "" ? "\"$schema\"." : "")."\"$table\"".
             ($where !== "" ? " WHERE $where" : "");
 
         // Execute the query.
