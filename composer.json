@@ -26,12 +26,12 @@
     },
     "autoload": {
         "psr-4": {
-            "MVQN\\": "src/MVQN/"
+            "MVQN\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "MVQN\\": "tests/MVQN/"
+            "MVQN\\": "tests/"
         }
     }
 }

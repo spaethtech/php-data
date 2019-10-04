@@ -6,18 +6,17 @@ use MVQN\Data\Exceptions\ModelClassException;
 use MVQN\Data\Models\Model;
 use MVQN\UCRM\Data\Models\General;
 use MVQN\UCRM\Data\Models\Option;
-use MVQN\UCRM\Data\Models\User;
 use MVQN\UCRM\Data\Models\UserGroup;
 
-require_once __DIR__."/../../../../vendor/autoload.php";
+require_once __DIR__."/../../../vendor/autoload.php";
 
 
 /**
- * Class ModelTests
+ * Class DatabaseTests
  *
  * @author Ryan Spaeth <rspaeth@mvqn.net>
  */
-class ModelTests extends \PHPUnit\Framework\TestCase
+class DatabaseTests extends \PHPUnit\Framework\TestCase
 {
     protected const JSON_OPTIONS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
 
@@ -25,15 +24,15 @@ class ModelTests extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        $env = new \Dotenv\Dotenv(__DIR__."/../../../../");
+        $env = new \Dotenv\Dotenv(__DIR__ . "/../../data/");
         $env->load();
 
         $this->pdo = Database::connect(
-            getenv("POSTGRES_HOST"),
-            (int)getenv("POSTGRES_PORT"),
-            getenv("POSTGRES_DB"),
-            getenv("POSTGRES_USER"),
-            getenv("POSTGRES_PASSWORD"));
+            getenv("DATABASE_HOST"),
+            (int)getenv("DATABASE_PORT"),
+            getenv("DATABASE_NAME"),
+            getenv("DATABASE_USER"),
+            getenv("DATABASE_PASSWORD"));
     }
 
     public function testConnect()
@@ -61,10 +60,12 @@ class ModelTests extends \PHPUnit\Framework\TestCase
 
     public function testWhere()
     {
-        $results = Database::where("option", "code = 'MAILER_PASSWORD'" );
+        //Database::schema("unms");
+        $results = Database::where("unms.ucrm.option", "code = 'SITE_NAME'");
         echo json_encode($results, self::JSON_OPTIONS)."\n";
         $this->assertCount(1, $results);
 
+        /*
         $results = Database::where("option", "code = 'MAILER_PASSWORD'", [ "code", "value" ]);
         echo json_encode($results, self::JSON_OPTIONS)."\n";
         $this->assertCount(1, $results);
@@ -74,6 +75,7 @@ class ModelTests extends \PHPUnit\Framework\TestCase
         $this->assertCount(1, $results);
 
         echo "\n";
+        */
     }
 
     public function testModelAbstractionStatic()
@@ -117,21 +119,15 @@ class ModelTests extends \PHPUnit\Framework\TestCase
         echo "\n";
     }
 
-    public function testCreate()
+    public function testTypes()
     {
-        //Model::create(__DIR__."/../../UCRM/Data/Models/", "MVQN\\UCRM\\Data\\Models", "user");
+        $user = Database::select("user");
 
-        /** @var User $user */
-        $user = User::where("user_id", "=", 1)->first();
+        $test = $user[0]["backup_codes"];
 
-        // TODO: Figure out why citext columns always fail using WHERE!
 
-        echo $user->getCreatedAt()->format("c")."\n";
-        echo $user->getUsername()."\n";
-
-        echo $user."\n";
+        echo "";
     }
-
 
 
 }
