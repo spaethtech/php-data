@@ -1,11 +1,11 @@
-# mvqn/data
+# rspaeth/data
 A simple database library.
 
 &nbsp;
 ## Installation
 Install the latest version with
 ```bash
-composer require mvqn/data
+composer require rspaeth/data
 ```
 
 &nbsp;
@@ -29,18 +29,15 @@ COMING SOON
 ## About
 
 ### Requirements
-- mvqn/common
-- mvqn/annotations
-- mvqn/collections
-- mvqn/dynamics
-
-### Related Packages
-[mvqn-ucrm/data](https://github.com/mvqn-ucrm/data)
+- rspaeth/common
+- rspaeth/annotations
+- rspaeth/collections
+- rspaeth/dynamics
 
 Another plugin module used to simplify access to the UCRM REST API.
 
 ### Submitting bugs and feature requests
-Bugs and feature request are tracked on [Github](https://github.com/mvqn/data/issues)
+Bugs and feature request are tracked on [Github](https://github.com/rspaeth/data/issues)
 
 ### Author
 Ryan Spaeth <[rspaeth@mvqn.net](mailto:rspaeth@mvqn.net)>

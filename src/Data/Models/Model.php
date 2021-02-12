@@ -1,19 +1,19 @@
 <?php
 declare(strict_types=1);
 
-namespace MVQN\Data\Models;
+namespace rspaeth\Data\Models;
 
 use Exception;
-use MVQN\Annotations\AnnotationReader;
-use MVQN\Collections\Collection;
-use MVQN\Common\Casings;
-use MVQN\Data\Exceptions\ModelCreationException;
-use MVQN\Dynamics\AutoObject;
-use MVQN\Data\Database;
+use rspaeth\Annotations\AnnotationReader;
+use rspaeth\Collections\Collection;
+use rspaeth\Common\Casings;
+use rspaeth\Data\Exceptions\ModelCreationException;
+use rspaeth\Dynamics\AutoObject;
+use rspaeth\Data\Database;
 
-use MVQN\Data\Exceptions\DatabaseConnectionException;
-use MVQN\Data\Exceptions\ModelClassException;
-use MVQN\Data\Exceptions\ModelMissingPropertyException;
+use rspaeth\Data\Exceptions\DatabaseConnectionException;
+use rspaeth\Data\Exceptions\ModelClassException;
+use rspaeth\Data\Exceptions\ModelMissingPropertyException;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\Method;
 use Nette\PhpGenerator\PhpNamespace;
@@ -22,7 +22,7 @@ use Nette\PhpGenerator\Property;
 /**
  * Class Model
  *
- * @package MVQN\UCRM\Data
+ * @package rspaeth\UCRM\Data
  * @author Ryan Spaeth <rspaeth@mvqn.net>
  * @final
  */
@@ -930,12 +930,12 @@ abstract class Model extends AutoObject
         $class = $namespace."\\".$className;
 
         $_namespace = (new PhpNamespace($namespace))
-            ->addUse("MVQN\\Data\\Models\\Model")
-            ->addUse("MVQN\\Data\\Annotations\\TableNameAnnotation", "TableName")
-            ->addUse("MVQN\\Data\\Annotations\\ColumnNameAnnotation", "ColumnName");
+            ->addUse("rspaeth\\Data\\Models\\Model")
+            ->addUse("rspaeth\\Data\\Annotations\\TableNameAnnotation", "TableName")
+            ->addUse("rspaeth\\Data\\Annotations\\ColumnNameAnnotation", "ColumnName");
 
         $_class = ($_namespace->addClass($className))
-            ->addExtend("MVQN\\Data\\Models\\Model")
+            ->addExtend("rspaeth\\Data\\Models\\Model")
             ->setFinal()
             ->addComment("Class $className")
             ->addComment("")

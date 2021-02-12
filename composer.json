@@ -1,7 +1,6 @@
 {
-    "name": "mvqn/data",
+    "name": "rspaeth/data",
     "description": "A simple database library.",
-    "minimum-stability": "stable",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -14,24 +13,29 @@
         "php": "~7.3",
         "ext-json": "*",
         "ext-pdo": "*",
-        "mvqn/common": "~1",
-        "mvqn/annotations": "~1",
-        "mvqn/collections": "~1",
-        "mvqn/dynamics": "~1",
+        "rspaeth/common": "*",
+        "rspaeth/annotations": "*",
+        "rspaeth/collections": "*",
+        "rspaeth/dynamics": "*",
         "nette/php-generator": "~3.2"
     },
     "require-dev": {
-        "phpunit/phpunit": "~8",
+        "phpunit/phpunit": "~9",
         "vlucas/phpdotenv": "~2.5"
     },
     "autoload": {
         "psr-4": {
-            "MVQN\\": "src/"
+            "rspaeth\\": "./src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "MVQN\\": "tests/"
+            "rspaeth\\": "./tests/"
         }
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": [
+        { "type": "path", "url": "../*"}
+    ]
 }

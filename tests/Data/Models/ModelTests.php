@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace MVQN\Data;
-use MVQN\Data\Exceptions\ModelClassException;
-use MVQN\Data\Models\Model;
-use MVQN\UCRM\Data\Models\General;
-use MVQN\UCRM\Data\Models\Option;
-use MVQN\UCRM\Data\Models\User;
-use MVQN\UCRM\Data\Models\UserGroup;
+namespace rspaeth\Data;
+use rspaeth\Data\Exceptions\ModelClassException;
+use rspaeth\Data\Models\Model;
+use rspaeth\UCRM\Data\Models\General;
+use rspaeth\UCRM\Data\Models\Option;
+use rspaeth\UCRM\Data\Models\User;
+use rspaeth\UCRM\Data\Models\UserGroup;
 
 require_once __DIR__."/../../../../vendor/autoload.php";
 
@@ -119,7 +119,7 @@ class ModelTests extends \PHPUnit\Framework\TestCase
 
     public function testCreate()
     {
-        //Model::create(__DIR__."/../../UCRM/Data/Models/", "MVQN\\UCRM\\Data\\Models", "user");
+        //Model::create(__DIR__."/../../UCRM/Data/Models/", "rspaeth\\UCRM\\Data\\Models", "user");
 
         /** @var User $user */
         $user = User::where("user_id", "=", 1)->first();
