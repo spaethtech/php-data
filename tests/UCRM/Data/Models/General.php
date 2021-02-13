@@ -1,16 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace rspaeth\UCRM\Data\Models;
+namespace MVQN\UCRM\Data\Models;
 
-use rspaeth\Data\Models\Model;
-use rspaeth\Data\Annotations\TableNameAnnotation as TableName;
-use rspaeth\Data\Annotations\ColumnNameAnnotation as ColumnName;
+use MVQN\Data\Models\Model;
+use MVQN\Data\Annotations\TableNameAnnotation as TableName;
+use MVQN\Data\Annotations\ColumnNameAnnotation as ColumnName;
 
 /**
  * Class General
  *
- * @package rspaeth\UCRM\Data
+ * @package MVQN\UCRM\Data
  * @author Ryan Spaeth <rspaeth@mvqn.net>
  * @final
  *

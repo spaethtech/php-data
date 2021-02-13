@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace rspaeth\Data;
+namespace MVQN\Data;
 
-use rspaeth\Common\Strings;
+use MVQN\Common\Strings;
 use \Exception;
 
 /**
  * Class Database
  *
- * @package rspaeth\Data
+ * @package MVQN\Data
  * @author Ryan Spaeth <rspaeth@mvqn.net>
  * @final
  */

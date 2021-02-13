@@ -1,19 +1,19 @@
 <?php
 declare(strict_types=1);
 
-namespace rspaeth\Data\Models;
+namespace MVQN\Data\Models;
 
 use Exception;
-use rspaeth\Annotations\AnnotationReader;
-use rspaeth\Collections\Collection;
-use rspaeth\Common\Casings;
-use rspaeth\Data\Exceptions\ModelCreationException;
-use rspaeth\Dynamics\AutoObject;
-use rspaeth\Data\Database;
+use MVQN\Annotations\AnnotationReader;
+use MVQN\Collections\Collection;
+use MVQN\Common\Casings;
+use MVQN\Data\Exceptions\ModelCreationException;
+use MVQN\Dynamics\AutoObject;
+use MVQN\Data\Database;
 
-use rspaeth\Data\Exceptions\DatabaseConnectionException;
-use rspaeth\Data\Exceptions\ModelClassException;
-use rspaeth\Data\Exceptions\ModelMissingPropertyException;
+use MVQN\Data\Exceptions\DatabaseConnectionException;
+use MVQN\Data\Exceptions\ModelClassException;
+use MVQN\Data\Exceptions\ModelMissingPropertyException;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\Method;
 use Nette\PhpGenerator\PhpNamespace;
@@ -22,7 +22,7 @@ use Nette\PhpGenerator\Property;
 /**
  * Class Model
  *
- * @package rspaeth\UCRM\Data
+ * @package MVQN\UCRM\Data
  * @author Ryan Spaeth <rspaeth@mvqn.net>
  * @final
  */

@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace rspaeth\Data\Annotations;
+namespace MVQN\Data\Annotations;
 
-use rspaeth\Annotations\Annotation;
+use MVQN\Annotations\Annotation;
 
 /**
  * Class ColumnNameAnnotation
  *
- * @package rspaeth\Data\Annotations
+ * @package MVQN\Data\Annotations
  * @author Ryan Spaeth <rspaeth@mvqn.net>
  * @final
  */

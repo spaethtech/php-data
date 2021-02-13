@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace rspaeth\Data\Exceptions;
+namespace MVQN\Data\Exceptions;
 
 /**
  * Class DatabaseConnectionException
  *
- * @package rspaeth\Data\Exceptions
+ * @package MVQN\Data\Exceptions
  * @author Ryan Spaeth <rspaeth@mvqn.net>
  * @final
  */
