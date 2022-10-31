@@ -1,16 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace MVQN\Data;
+namespace SpaethTech\Data;
 
-use MVQN\Common\Strings;
+use SpaethTech\Common\Strings;
 use \Exception;
 
 /**
  * Class Database
  *
- * @package MVQN\Data
- * @author Ryan Spaeth <rspaeth@mvqn.net>
+ * @package SpaethTech\Data
+ * @author Ryan Spaeth <rspaeth@spaethtech.com>
  * @final
  */
 final class Database

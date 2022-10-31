@@ -1,19 +1,19 @@
 <?php
 declare(strict_types=1);
 
-namespace MVQN\Data\Models;
+namespace SpaethTech\Data\Models;
 
 use Exception;
-use MVQN\Annotations\AnnotationReader;
-use MVQN\Collections\Collection;
-use MVQN\Common\Casings;
-use MVQN\Data\Exceptions\ModelCreationException;
-use MVQN\Dynamics\AutoObject;
-use MVQN\Data\Database;
+use SpaethTech\Annotations\AnnotationReader;
+use SpaethTech\Collections\Collection;
+use SpaethTech\Common\Casings;
+use SpaethTech\Data\Exceptions\ModelCreationException;
+use SpaethTech\Dynamics\AutoObject;
+use SpaethTech\Data\Database;
 
-use MVQN\Data\Exceptions\DatabaseConnectionException;
-use MVQN\Data\Exceptions\ModelClassException;
-use MVQN\Data\Exceptions\ModelMissingPropertyException;
+use SpaethTech\Data\Exceptions\DatabaseConnectionException;
+use SpaethTech\Data\Exceptions\ModelClassException;
+use SpaethTech\Data\Exceptions\ModelMissingPropertyException;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\Method;
 use Nette\PhpGenerator\PhpNamespace;
@@ -22,8 +22,8 @@ use Nette\PhpGenerator\Property;
 /**
  * Class Model
  *
- * @package MVQN\UCRM\Data
- * @author Ryan Spaeth <rspaeth@mvqn.net>
+ * @package SpaethTech\UCRM\Data
+ * @author Ryan Spaeth <rspaeth@spaethtech.com>
  * @final
  */
 abstract class Model extends AutoObject
@@ -588,11 +588,11 @@ abstract class Model extends AutoObject
         /** @noinspection SqlResolve */
         $query = "
             SELECT
-                tc.constraint_name, tc.table_name, kcu.column_name, 
+                tc.constraint_name, tc.table_name, kcu.column_name,
                 ccu.table_name AS foreign_table_name,
-                ccu.column_name AS foreign_column_name 
-            FROM 
-                information_schema.table_constraints AS tc 
+                ccu.column_name AS foreign_column_name
+            FROM
+                information_schema.table_constraints AS tc
                 JOIN information_schema.key_column_usage AS kcu
                   ON tc.constraint_name = kcu.constraint_name
                 JOIN information_schema.constraint_column_usage AS ccu
@@ -651,11 +651,11 @@ abstract class Model extends AutoObject
         /** @noinspection SqlResolve */
         $query = "
             SELECT
-                tc.constraint_name, tc.table_name, kcu.column_name, 
+                tc.constraint_name, tc.table_name, kcu.column_name,
                 ccu.table_name AS foreign_table_name,
-                ccu.column_name AS foreign_column_name 
-            FROM 
-                information_schema.table_constraints AS tc 
+                ccu.column_name AS foreign_column_name
+            FROM
+                information_schema.table_constraints AS tc
                 JOIN information_schema.key_column_usage AS kcu
                   ON tc.constraint_name = kcu.constraint_name
                 JOIN information_schema.constraint_column_usage AS ccu
@@ -721,9 +721,9 @@ abstract class Model extends AutoObject
         $query = "
             SELECT
                 column_name, data_type, is_nullable, column_default
-            FROM 
+            FROM
                 information_schema.columns
-            WHERE table_name = '$table' AND is_nullable = 'YES' 
+            WHERE table_name = '$table' AND is_nullable = 'YES'
         ";
 
         self::$nullablesCache[$table] = [];
@@ -789,7 +789,7 @@ abstract class Model extends AutoObject
         $query = "
             SELECT
                 *
-            FROM 
+            FROM
                 information_schema.columns
             WHERE table_name = '$table'
         ";
@@ -940,7 +940,7 @@ abstract class Model extends AutoObject
             ->addComment("Class $className")
             ->addComment("")
             ->addComment("@package ".dirname($namespace))
-            ->addComment("@author Ryan Spaeth <rspaeth@mvqn.net>")
+            ->addComment("@author Ryan Spaeth <rspaeth@spaethtech.com>")
             ->addComment("@final")
             ->addComment("")
             ->addComment("@TableName $table");

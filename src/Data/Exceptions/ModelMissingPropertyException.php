@@ -1,16 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace MVQN\Data\Exceptions;
+namespace SpaethTech\Data\Exceptions;
 
 /**
  * Class ModelMissingPropertyException
  *
- * @package MVQN\Data\Exceptions
- * @author Ryan Spaeth <rspaeth@mvqn.net>
+ * @package SpaethTech\Data\Exceptions
+ * @author Ryan Spaeth <rspaeth@spaethtech.com>
  * @final
  */
 final class ModelMissingPropertyException extends \Exception
 {
 }
-

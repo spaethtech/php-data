@@ -1,17 +1,17 @@
 <?php
 declare(strict_types=1);
 
-namespace MVQN\UCRM\Data\Models;
+namespace SpaethTech\UCRM\Data\Models;
 
-use MVQN\Data\Models\Model;
-use MVQN\Data\Annotations\TableNameAnnotation as TableName;
-use MVQN\Data\Annotations\ColumnNameAnnotation as ColumnName;
+use SpaethTech\Data\Models\Model;
+use SpaethTech\Data\Annotations\TableNameAnnotation as TableName;
+use SpaethTech\Data\Annotations\ColumnNameAnnotation as ColumnName;
 
 /**
  * Class General
  *
- * @package MVQN\UCRM\Data
- * @author Ryan Spaeth <rspaeth@mvqn.net>
+ * @package SpaethTech\UCRM\Data
+ * @author Ryan Spaeth <rspaeth@spaethtech.com>
  * @final
  *
  * @method int|null getGeneralId()

@@ -40,7 +40,7 @@ Another plugin module used to simplify access to the UCRM REST API.
 Bugs and feature request are tracked on [Github](https://github.com/rspaeth/data/issues)
 
 ### Author
-Ryan Spaeth <[rspaeth@mvqn.net](mailto:rspaeth@mvqn.net)>
+Ryan Spaeth <[rspaeth@spaethtech.com](mailto:rspaeth@spaethtech.com)>
 
 ### License
 This module is licensed under the MIT License - see the `LICENSE` file for details.

@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace MVQN\Data;
-use MVQN\Data\Exceptions\ModelClassException;
-use MVQN\Data\Models\Model;
-use MVQN\UCRM\Data\Models\General;
-use MVQN\UCRM\Data\Models\Option;
-use MVQN\UCRM\Data\Models\UserGroup;
+namespace SpaethTech\Data;
+use SpaethTech\Data\Exceptions\ModelClassException;
+use SpaethTech\Data\Models\Model;
+use SpaethTech\UCRM\Data\Models\General;
+use SpaethTech\UCRM\Data\Models\Option;
+use SpaethTech\UCRM\Data\Models\UserGroup;
 
 require_once __DIR__."/../../../vendor/autoload.php";
 
@@ -14,7 +14,7 @@ require_once __DIR__."/../../../vendor/autoload.php";
 /**
  * Class DatabaseTests
  *
- * @author Ryan Spaeth <rspaeth@mvqn.net>
+ * @author Ryan Spaeth <rspaeth@spaethtech.com>
  */
 class DatabaseTests extends \PHPUnit\Framework\TestCase
 {

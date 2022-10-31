@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace MVQN\Data\Annotations;
+namespace SpaethTech\Data\Annotations;
 
-use MVQN\Annotations\Annotation;
+use SpaethTech\Annotations\Annotation;
 
 /**
  * Class TableNameAnnotation
  *
- * @package MVQN\Data\Annotations
- * @author Ryan Spaeth <rspaeth@mvqn.net>
+ * @package SpaethTech\Data\Annotations
+ * @author Ryan Spaeth <rspaeth@spaethtech.com>
  * @final
  */
 final class TableNameAnnotation extends Annotation

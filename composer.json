@@ -1,22 +1,22 @@
 {
-    "name": "mvqn/data",
+    "name": "spaethtech/data",
     "description": "A simple database library.",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
             "name": "Ryan Spaeth",
-            "email": "rspaeth@mvqn.net"
+            "email": "rspaeth@spaethtech.com"
         }
     ],
     "require": {
         "php": "~7.3",
         "ext-json": "*",
         "ext-pdo": "*",
-        "mvqn/common": "dev-master",
-        "mvqn/annotations": "dev-master",
-        "mvqn/collections": "dev-master",
-        "mvqn/dynamics": "dev-master",
+        "spaethtech/common": "dev-master",
+        "spaethtech/annotations": "dev-master",
+        "spaethtech/collections": "dev-master",
+        "spaethtech/dynamics": "dev-master",
         "nette/php-generator": "~3.2"
     },
     "require-dev": {
@@ -25,12 +25,12 @@
     },
     "autoload": {
         "psr-4": {
-            "MVQN\\": "./src/"
+            "SpaethTech\\": "./src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "MVQN\\": "./tests/"
+            "SpaethTech\\": "./tests/"
         }
     },
     "minimum-stability": "dev",
