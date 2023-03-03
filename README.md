@@ -1,46 +1,98 @@
-# rspaeth/data
-A simple database library.
 
-&nbsp;
-## Installation
-Install the latest version with
+# spaethtech/data
+
+This is an automatically generated documentation for **spaethtech/data**.
+
+# Installation
+
 ```bash
-composer require rspaeth/data
+composer require spaethtech/data
 ```
 
-&nbsp;
-## Basic Usage
-```php
-<?php
-
-// COMING SOON
-```
-
-&nbsp;
-## Documentation
-
-COMING SOON
 
 
-&nbsp;
-## Third Party Packages
-COMING SOON
+## Namespaces
 
-## About
 
-### Requirements
-- rspaeth/common
-- rspaeth/annotations
-- rspaeth/collections
-- rspaeth/dynamics
+### \SpaethTech\Data
 
-Another plugin module used to simplify access to the UCRM REST API.
+#### Classes
 
-### Submitting bugs and feature requests
-Bugs and feature request are tracked on [Github](https://github.com/rspaeth/data/issues)
+| Class  | Description  |
+|:-------|:-------------|
+| [Database](./docs/SpaethTech/Data/Database.md) | Class Database|
 
-### Author
-Ryan Spaeth <[rspaeth@spaethtech.com](mailto:rspaeth@spaethtech.com)>
 
-### License
-This module is licensed under the MIT License - see the `LICENSE` file for details.
+
+
+### \SpaethTech\Data\Annotations
+
+#### Classes
+
+| Class  | Description  |
+|:-------|:-------------|
+| [ColumnNameAnnotation](./docs/SpaethTech/Data/Annotations/ColumnNameAnnotation.md) | Class ColumnNameAnnotation|
+| [TableNameAnnotation](./docs/SpaethTech/Data/Annotations/TableNameAnnotation.md) | Class TableNameAnnotation|
+
+
+
+
+### \SpaethTech\Data\Exceptions
+
+#### Classes
+
+| Class  | Description  |
+|:-------|:-------------|
+| [DatabaseConnectionException](./docs/SpaethTech/Data/Exceptions/DatabaseConnectionException.md) | Class DatabaseConnectionException|
+| [ModelClassException](./docs/SpaethTech/Data/Exceptions/ModelClassException.md) | Class ModelClassException|
+| [ModelCreationException](./docs/SpaethTech/Data/Exceptions/ModelCreationException.md) | Class ModelCreationException|
+| [ModelMissingPropertyException](./docs/SpaethTech/Data/Exceptions/ModelMissingPropertyException.md) | Class ModelMissingPropertyException|
+
+
+
+
+### \SpaethTech\Data\Models
+
+#### Classes
+
+| Class  | Description  |
+|:-------|:-------------|
+| [Model](./docs/SpaethTech/Data/Models/Model.md) | Class Model|
+
+
+
+
+---
+> Automatically generated from source code comments on 2023-03-03 using
+> [phpDocumentor](http://www.phpdoc.org/) for [spaethtech/php-monorepo](https://github.com/spaethtech/php-monorepo)
+
+<style>
+/* Remove padding and background in <code> used in the structs title */
+h2 code,
+h3 code,
+h4 code,
+h5 code {
+    background: none !important;
+    padding: 0 !important;
+}
+
+table {
+    width: 100%;
+    display: table;
+}
+
+thead > tr > th {
+    text-align: left;
+}
+
+thead > tr > th:first-child {
+    width: 20%;
+}
+
+/* Remove padding and background in <code> used in the tables */
+td code,
+th code {
+    background: none;
+    padding: 0;
+}
+</style>
